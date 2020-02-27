@@ -18,6 +18,7 @@ FROM scala
 ARG OPENWHISK_JAR
 ENV DOCKER_VERSION=18.06.3-ce
 ENV WSK_VERSION=1.0.0
+ENV TRAEFIK_VERSION=1.7.20
 ADD init /
 ADD stop waitready /bin/
 RUN chmod +x /bin/stop /bin/waitready ;\
@@ -28,6 +29,11 @@ RUN chmod +x /bin/stop /bin/waitready ;\
   https://github.com/apache/openwhisk-cli/releases/download/${WSK_VERSION}/OpenWhisk_CLI-${WSK_VERSION}-linux-amd64.tgz \
   | tar xzvf - -C /usr/bin wsk
 ADD ${OPENWHISK_JAR} /openwhisk-standalone.jar
+ADD traefik.toml /etc/traefik.toml
+ADD index.html /app/public/index.html
+RUN curl -o /sbin/traefik -sL \
+    https://github.com/containous/traefik/releases/download/v${TRAEFIK_VERSION}/traefik_linux-amd64 && \
+    chmod +x /sbin/traefik && \
+    mkdir /app/actions
 WORKDIR /
-EXPOSE 8080
 ENTRYPOINT  ["/init"]

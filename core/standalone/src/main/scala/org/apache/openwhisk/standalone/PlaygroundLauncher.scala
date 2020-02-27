@@ -71,6 +71,8 @@ class PlaygroundLauncher(host: String,
 
   private val pg = "playground"
   private val pgUrl = s"http://${StandaloneDockerSupport.getLocalHostName()}:$pgPort/$pg"
+  private val app = "app"
+  private val appDir = "/app/public"
 
   private val wsk = new Wsk(host, controllerPort, authKey)
 
@@ -121,6 +123,7 @@ class PlaygroundLauncher(host: String,
   object PlaygroundService extends BasicHttpService {
     override def routes(implicit transid: TransactionId): Route =
       path(PathEnd | Slash | pg) { redirect(s"/$pg/ui/index.html", StatusCodes.Found) } ~
+      path(PathEnd | Slash | app) { redirect(s"/$app/index.html", StatusCodes.Found) } ~
         cors() {
           pathPrefix(pg / "ui" / Segment) { fileName =>
             get {
@@ -130,6 +133,8 @@ class PlaygroundLauncher(host: String,
                 getFromResource(s"$uiPath/$fileName")
               }
             }
+          } ~ pathPrefix(app) {
+            getFromDirectory(appDir)
           }
         }
   }

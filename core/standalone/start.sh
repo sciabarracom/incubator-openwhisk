@@ -19,13 +19,13 @@ IMAGE="${1:-openwhisk/standalone:nightly}"
 shift
 docker run --rm -d \
   -h openwhisk --name openwhisk \
-  -p 3233:3233 -p 3232:3232 \
+  -p 3280:3280 \
   -v //var/run/docker.sock:/var/run/docker.sock \
  "$IMAGE" "$@"
 docker exec openwhisk waitready
 case "$(uname)" in
- (Linux) xdg-open http://localhost:3232 ;;
- (Darwin) open http://localhost:3232 ;;
- (MINGW*) start http://localhost:3232 ;;
- (*) echo Please use http://localhost:3232 for playground ;;
+ (Linux) xdg-open http://localhost:3280 ;;
+ (Darwin) open http://localhost:3280 ;;
+ (MINGW*) start http://localhost:3280 ;;
+ (*) echo Please use http://localhost:3280 for playground ;;
 esac

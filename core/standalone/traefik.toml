@@ -1,0 +1,49 @@
+defaultEntryPoints = ["http"]
+debug = true
+
+[entryPoints]
+  [entryPoints.http]
+    address = ":3280"
+    [entryPoints.http.redirect]
+      regex = "^http://localhost:3280/?$"
+      replacement = "http://localhost:3280/app/index.html"
+
+  [entryPoints.traefik]
+    address = ":3281"
+
+[api]
+  entryPoint = "traefik"
+  debug = true
+  dashboard = true
+[rest]
+  entryPoint = "traefik"
+
+
+[http.middlewares.root-redirect.redirectRegex]
+   regex = "^http://localhost:3280/"
+   replacement = "http://localhost/app/index.html"
+
+[file]
+
+[frontends]
+  [frontends.apifront]
+  backend = "apiback"
+  [frontends.appfront]
+  backend = "appback"
+  [frontends.playfront]
+  backend = "playback"
+
+  [frontends.apifront.routes.apiroute]
+  rule = "PathPrefix:/api"
+  [frontends.appfront.routes.approute]
+  rule = "PathPrefix:/app"
+  [frontends.playfront.routes.playroute]
+  rule = "PathPrefix:/playground"
+
+[backends]
+  [backends.apiback.servers.apiserver]
+  url = "http://127.0.0.1:3233/api"
+  [backends.appback.servers.appserver]
+  url = "http://127.0.0.1:3232/app"
+  [backends.playback.servers.playserver]
+  url = "http://127.0.0.1:3232/playground"
