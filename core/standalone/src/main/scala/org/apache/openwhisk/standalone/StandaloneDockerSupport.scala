@@ -70,7 +70,7 @@ case class ServiceContainer(port: Int, description: String, name: String)
 
 object StandaloneDockerSupport {
   val prefix = "whisk-"
-  val network = "bridge"
+  val network = sys.props.get("whisk.standalone.docker.network").getOrElse("bridge")
 
   def checkOrAllocatePort(preferredPort: Int): Int = {
     if (isPortFree(preferredPort)) preferredPort else freePort()
@@ -106,12 +106,21 @@ object StandaloneDockerSupport {
   }
 
   /**
-   * Returns the hostname to access the playground.
-   * It defaults to localhost but it can be overriden
-   * and it is useful when the standalone is run in a container.
+   * Returns the url to access the playground.
+   * It defaults to http://localhost:3232 but it can be overriden,
+   * it is useful when the standalone is run in a container.
    */
-  def getExternalHostName(): String = {
-    sys.props.get("whisk.standalone.host.external").getOrElse(getLocalHostName())
+  def getPlaygroundURL(): String = {
+    sys.props.get("whisk.standalone.url.playground").getOrElse(s"http://${getLocalHostName()}:3232")
+  }
+
+  /**
+    * Returns the url to access the apihost.
+    * It defaults to http://localhost:3233 but it can be overriden,
+    * it is useful when the standalone is run in a container.
+    */
+  def getApiHostURL(): String = {
+    sys.props.get("whisk.standalone.url.apihost").getOrElse(s"http://${getLocalHostName()}:3233")
   }
 
   /**

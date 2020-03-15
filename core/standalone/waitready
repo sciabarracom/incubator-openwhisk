@@ -20,9 +20,9 @@ wsk property set --apihost "http://localhost:3233" --auth "$AUTH"
 until wsk action list 2>/dev/null >/dev/null
 do sleep 5 ; echo server still not ready - retrying
 done
-wsk action update testme$$ <(echo 'function main(){return {"ready":true}}') --kind nodejs:10
-until wsk action invoke testme$$ -r 2>/dev/null | grep 'ready'
+wsk action update checkReady <(echo 'function main(){return {"ready":true}}') --kind nodejs:10
+until wsk action invoke checkReady -r 2>/dev/null | grep 'ready'
 do sleep 1 ; echo server initializing... 
 done
-wsk action delete testme$$
+wsk action delete checkReady >/dev/null
 

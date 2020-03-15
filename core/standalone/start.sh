@@ -15,17 +15,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-IMAGE="${1:-openwhisk/standalone:nightly}"
-shift
-docker run --rm -d \
-  -h openwhisk --name openwhisk \
-  -p 3280:3280 \
+IMAGE="openwhisk/standalone:nightly"
+DOCKER_EXTRA_ARGS=""
+JVM_EXTRA_ARGS=""
+START="-d"
+while getopts ":j:d:i:g" o; do
+    case "${o}" in
+        d)
+            DOCKER_EXTRA_ARGS="${DOCKER_EXTRA_ARGS}${OPTARG} "
+            ;;
+        j)
+            JVM_EXTRA_ARGS="${JVM_EXTRA_ARGS}${OPTARG} "
+            ;;
+        i)
+            IMAGE="${OPTARG}"
+            ;;
+        g)  # undocumented debugging option
+            START="-ti --entrypoint=/bin/bash"
+            ;;
+        *)
+            echo "(-j <jvm-args>|-d <docker-run-arg>|-i <image-name>)* <openwhisk-arg>..."
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+docker run --rm $START \
+  -h openwhisk --name openwhisk -p 3280:3280 \
   -v //var/run/docker.sock:/var/run/docker.sock \
- "$IMAGE" "$@"
-docker exec openwhisk waitready
-case "$(uname)" in
- (Linux) xdg-open http://localhost:3280 ;;
- (Darwin) open http://localhost:3280 ;;
- (MINGW*) start http://localhost:3280 ;;
- (*) echo Please use http://localhost:3280 for playground ;;
-esac
+  $DOCKER_EXTRA_ARGS -e JVM_EXTRA_ARGS="$JVM_EXTRA_ARGS" "$IMAGE" "$@"
+if docker exec openwhisk waitready
+then
+  case "$(uname)" in
+   (Linux) xdg-open http://localhost:3280 ;;
+   (Darwin) open http://localhost:3280 ;;
+   (MINGW*) start http://localhost:3280 ;;
+   (*) echo Please use http://localhost:3280 for playground ;;
+  esac
+else
+  echo error starting standalone OpenWhisk
+fi

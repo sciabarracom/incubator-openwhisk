@@ -398,27 +398,28 @@ The default standalone controller image is published as `openwhisk/standalone:ni
 
 You can specify a different image to this script and also pass additional parameters to Docker. The general format is:
 
-`bash <(curl -sL https://s.apache.org/openwhisk.sh) [<image-name>] [<additional-docker-parameters>...]`
+`bash <(curl -sL https://s.apache.org/openwhisk.sh) (-j <jvm-args>|-d <docker-run-arg>|-i <image-name>)* <openwhisk-arg>...`
 
-If you do not want to execute arbitrary code straight from the net, you can look at [this script](start.sh), check it and run it when you feel safe.
+where `-j` allows to pass additional parameters to the JVM, `-d` allows to pass additional parameters to docker, and `-i` allows to use a different image for the standalone openwhisk.
+
+Some useful options:
+
+- `-d --memory=1g` sets the memory for the docker container; this in turn sets the memory limit available to the JVM running standalone OpenWhisk. 
+- `-d --network=mynetwork` allows to set the network used by OpenWhisk docker. It defaults to `bridge`. You will have to create the network in advance. Note that standalone OpenWhisk propagates the network used to the images it creates.
+- `-d -e CONTAINER_EXTRA_ENV=__OW_DEBUG_PORT=8081` sets the environment variables that are propagated to the docker containers created by the standalone OpenWhisk.
+- `-j -Dconfig.loads` enable tracing of loaded configuration files. In general you can use it to set any OpenWhisk parameter that can we modified with system properties.
+
+### Configure the `wsk` cli
 
 If the playground is not enough, you can then install the [wsk CLI](https://github.com/apache/openwhisk-cli/releases) and retrieve the command line to configure `wsk` with:
 
 `docker logs openwhisk | grep 'wsk property'`
 
+### Stopping the standalone whisk
+
 To properly shut down OpenWhisk and any additional containers it has created, use [this script](stop.sh) or run the command:
 
 `docker exec openwhisk stop`
-
-### Extra Args for the Standalone OpenWhisk Docker Image
-
-When running OpenWhisk Standalone using the docker image,  you can set environment variables to pass extra args with the `-e` flag.
-
-Extra args are useful to configure the JVM running OpenWhisk and to propagate additional environment variables to containers running images. This feature is useful for example to enable debugging for actions.
-
-You can pass additional parameters (for example set system properties) to the JVM running OpenWhisk setting the environment variable `JVM_EXTRA_ARGS`. For example `-e JVM_EXTRA_ARGS=-Dconfig.loads` allows to enable tracing of configuration. You can set any OpenWhisk parameter with feature.
-
-You can also set additional environment variables for each container running actions invoked by OpenWhisk by setting `CONTAINER_EXTRA_ENV`. For example, setting `-e CONTAINER_EXTRA_ENV=__OW_DEBUG_PORT=8081` enables debugging for those images supporting starting the action under a debugger, like the typescript runtime.
 
 [1]: https://github.com/apache/openwhisk/blob/master/docs/cli.md
 [2]: https://github.com/apache/openwhisk/blob/master/docs/samples.md

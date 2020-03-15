@@ -419,6 +419,8 @@ object StandaloneOpenWhisk extends SLF4JLogging {
     val pullDisabled = conf.devMode()
     val dockerClient = new StandaloneDockerClient(pullDisabled)
     val dockerSupport = new StandaloneDockerSupport(dockerClient)
+    // propagate the network to use
+    setSysProp("whisk.container-factory.container-args.network", StandaloneDockerSupport.network)
 
     //Remove any existing launched containers
     dockerSupport.cleanup()
@@ -569,7 +571,7 @@ object StandaloneOpenWhisk extends SLF4JLogging {
     val pgPort = getPort(conf.uiPort.toOption, preferredPgPort)
     new PlaygroundLauncher(
       StandaloneDockerSupport.getLocalHostName(),
-      StandaloneDockerSupport.getExternalHostName(),
+      StandaloneDockerSupport.getPlaygroundURL(),
       owPort,
       pgPort,
       systemAuthKey,

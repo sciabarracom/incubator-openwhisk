@@ -39,7 +39,7 @@ import scala.sys.process._
 import scala.util.{Failure, Success, Try}
 
 class PlaygroundLauncher(host: String,
-                         extHost: String,
+                         extURL: String,
                          controllerPort: Int,
                          pgPort: Int,
                          authKey: String,
@@ -65,12 +65,12 @@ class PlaygroundLauncher(host: String,
   private val jsFileContent = {
     val js = resourceToString(jsFileName, "ui")
     val content =
-      js.replace("window.APIHOST='http://localhost:3233'", s"window.APIHOST='http://$extHost:$controllerPort'")
+      js.replace("window.APIHOST='http://localhost:3233'", s"window.APIHOST='$extURL'")
     content.getBytes(UTF_8)
   }
 
   private val pg = "playground"
-  private val pgUrl = s"http://${StandaloneDockerSupport.getLocalHostName()}:$pgPort/$pg"
+  private val pgUrl = s"$extURL/$pg"
   private val app = "app"
   private val appDir = "/app/public"
 

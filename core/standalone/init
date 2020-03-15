@@ -16,14 +16,17 @@
 # limitations under the License.
 #
 if ! test -e /var/run/docker.sock
-then echo "Please launch this image with the option -v /var/run/docker.sock:/var/run/docker.sock"
+then echo "Please launch this image with the option -v //var/run/docker.sock:/var/run/docker.sock"
      exit 1
 fi
+# launch traefik
 (
  while [ 1 ]
  do /sbin/traefik -c /etc/traefik.toml
  done
-)&(
+)&
+# wait for readyness then deploy actions
+(
  if test -f /app/actions/manifest.yaml
  then
    waitready
@@ -31,9 +34,12 @@ fi
    wsk project deploy
  fi
 )&
+DOCKER_NETWORK=$( docker inspect $(hostname) -f "{{json .NetworkSettings.Networks}}" | jq -r 'keys[0]')
 JVM_ARGS="$JVM_EXTRA_ARGS\
+ -Dwhisk.standalone.docker.network=${DOCKER_NETWORK:-bridge}\
  -Dwhisk.standalone.host.name=localhost\
  -Dwhisk.standalone.host.internal=127.0.0.1\
- -Dwhisk.standalone.host.external=localhost"
+ -Dwhisk.standalone.url.apihost=http://localhost:3280\
+ -Dwhisk.standalone.url.playground=http://localhost:3280"
 set -x
 java $JVM_ARGS -jar openwhisk-standalone.jar --no-browser "$@"
