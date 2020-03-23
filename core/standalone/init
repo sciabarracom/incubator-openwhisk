@@ -36,6 +36,7 @@ fi
 )&
 DOCKER_NETWORK=$( docker inspect $(hostname) -f "{{json .NetworkSettings.Networks}}" | jq -r 'keys[0]')
 JVM_ARGS="$JVM_EXTRA_ARGS\
+ -Dconfig.override_with_env_vars=true\
  -Dwhisk.standalone.docker.network=${DOCKER_NETWORK:-bridge}\
  -Dwhisk.standalone.host.name=localhost\
  -Dwhisk.standalone.host.internal=127.0.0.1\
