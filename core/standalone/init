@@ -39,8 +39,8 @@ JVM_ARGS="$JVM_EXTRA_ARGS\
  -Dconfig.override_with_env_vars=true\
  -Dwhisk.standalone.docker.network=${DOCKER_NETWORK:-bridge}\
  -Dwhisk.standalone.host.name=localhost\
- -Dwhisk.standalone.host.internal=127.0.0.1\
- -Dwhisk.standalone.url.apihost=http://localhost:3280\
- -Dwhisk.standalone.url.playground=http://localhost:3280"
+ -Dwhisk.standalone.host.ip=$(hostname -i)\
+ -Dwhisk.standalone.proxy.port=3280\
+ -Dwhisk.standalone.proxy.url=http://localhost:3280"
 set -x
 java $JVM_ARGS -jar openwhisk-standalone.jar --no-browser "$@"

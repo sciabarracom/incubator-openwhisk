@@ -290,7 +290,7 @@ object StandaloneOpenWhisk extends SLF4JLogging {
     log.info(s"Starting OpenWhisk standalone on port $port")
     System.setProperty(WhiskConfig.disableWhiskPropsFileRead, "true")
     setConfigProp(WhiskConfig.servicePort, port.toString)
-    setConfigProp(WhiskConfig.wskApiPort, port.toString)
+    setConfigProp(WhiskConfig.wskApiPort, StandaloneDockerSupport.getProxyPort(port).toString)
     setConfigProp(WhiskConfig.wskApiProtocol, "http")
 
     //Using hostInternalName instead of getLocalHostIp as using docker alpine way to

@@ -111,7 +111,7 @@ object StandaloneDockerSupport {
    * it is useful when the standalone is run in a container.
    */
   def getPlaygroundURL(): String = {
-    sys.props.get("whisk.standalone.url.playground").getOrElse(s"http://${getLocalHostName()}:3232")
+    sys.props.get("whisk.standalone.proxy.url").getOrElse(s"http://${getLocalHostName()}:3232")
   }
 
   /**
@@ -120,7 +120,7 @@ object StandaloneDockerSupport {
     * it is useful when the standalone is run in a container.
     */
   def getApiHostURL(): String = {
-    sys.props.get("whisk.standalone.url.apihost").getOrElse(s"http://${getLocalHostName()}:3233")
+    sys.props.get("whisk.standalone.proxy.url").getOrElse(s"http://${getLocalHostName()}:3233")
   }
 
   /**
@@ -135,6 +135,10 @@ object StandaloneDockerSupport {
       else "localhost")
   }
 
+
+  /**
+    * Returns the ip of the servers, it can be overriden by whisk.standalone.host.ip
+    */
   def getLocalHostIp(): String = {
     sys.props
       .get("whisk.standalone.host.ip")
@@ -145,11 +149,23 @@ object StandaloneDockerSupport {
   }
 
   /**
+    * Return the proxyed port to access to the service if there is a proxy
+    * It can be configured by whisk.standalone.proxy.port
+    * Otherwise it returns the default port (provided)
+    * @param port
+    */
+  def getProxyPort(defaultPort: Int): Int = {
+    sys.props
+      .get("whisk.standalone.proxy.port")
+      .getOrElse(defaultPort.toString()).toInt
+  }
+
+  /**
    * Determines the name/ip which code running within container can use to connect back to Controller
    */
   def getLocalHostInternalName(): String = {
     sys.props
-      .get("whisk.standalone.host.internal")
+      .get("whisk.standalone.host.ip")
       .getOrElse(
         if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS)
           "host.docker.internal"
