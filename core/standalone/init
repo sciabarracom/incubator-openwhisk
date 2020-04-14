@@ -34,13 +34,12 @@ fi
    wsk project deploy
  fi
 )&
-DOCKER_NETWORK=$( docker inspect $(hostname) -f "{{json .NetworkSettings.Networks}}" | jq -r 'keys[0]')
-JVM_ARGS="$JVM_EXTRA_ARGS\
- -Dconfig.override_with_env_vars=true\
+DOCKER_NETWORK=$(docker inspect $(hostname) -f "{{json .NetworkSettings.Networks}}" | jq -r 'keys[0]')
+JVM_ARGS="-Dconfig.override_with_env_vars=true\
  -Dwhisk.standalone.docker.network=${DOCKER_NETWORK:-bridge}\
  -Dwhisk.standalone.host.name=localhost\
  -Dwhisk.standalone.host.ip=$(hostname -i)\
  -Dwhisk.standalone.proxy.port=3280\
- -Dwhisk.standalone.proxy.url=http://localhost:3280"
+ -Dwhisk.standalone.proxy.url=http://localhost:3280 $JVM_EXTRA_ARGS"
 set -x
 java $JVM_ARGS -jar openwhisk-standalone.jar --no-browser "$@"
