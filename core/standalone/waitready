@@ -15,14 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-AUTH=${CONFIG_FORCE_whisk_users_guest:-"23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"}
-wsk property set --apihost "http://localhost:3233" --auth "$AUTH"
-until wsk action list 2>/dev/null >/dev/null
-do sleep 5 ; echo server still not ready - retrying
+STATE="stopped"
+while true
+do 
+   if test -e /var/run/state
+   then STATE="$(cat /var/run/state)"
+   fi
+   if echo $STATE | grep ready
+   then break
+   fi
+   echo "server: $STATE, waiting..."
+   sleep 5
 done
-wsk action update checkReady <(echo 'function main(){return {"ready":true}}') --kind nodejs:10
-until wsk action invoke checkReady -r 2>/dev/null | grep 'ready'
-do sleep 1 ; echo server initializing... 
-done
-wsk action delete checkReady >/dev/null
 

@@ -21,8 +21,7 @@ ENV WSK_VERSION=1.0.0
 ENV TRAEFIK_VERSION=1.7.20
 ADD init /
 ADD stop waitready /bin/
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install jq;\
-  chmod +x /bin/stop /bin/waitready ;\
+RUN chmod +x /bin/stop /bin/waitready ;\
   curl -sL \
   https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
   | tar xzvf -  -C /usr/bin --strip 1 docker/docker ;\

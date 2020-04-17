@@ -19,6 +19,10 @@ if ! test -e /var/run/docker.sock
 then echo "Please launch this image with the option -v //var/run/docker.sock:/var/run/docker.sock"
      exit 1
 fi
+DEFAULT_AUTH="23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
+AUTH=${CONFIG_FORCE_whisk_users_guest:-$DEFAULT_AUTH}
+wsk property set --apihost "http://localhost:3233" --auth "$AUTH"
+echo "stopped" >/var/run/state
 # launch traefik
 (
  while [ 1 ]
@@ -27,12 +31,20 @@ fi
 )&
 # wait for readyness then deploy actions
 (
- if test -f /app/actions/manifest.yaml
- then
-   waitready
-   cd /app/actions
-   wsk project deploy
- fi
+  until wsk action list 2>/dev/null >/dev/null
+  do sleep 5 ; echo "starting" >/var/run/state
+  done
+  wsk action update checkReady <(echo 'function main(){return {"ready":true}}') --kind nodejs:10
+  until wsk action invoke checkReady -r 2>/dev/null | grep 'ready'
+  do sleep 1 ; echo "initializing" >/var/run/state
+  done
+  wsk action delete checkReady >/dev/null
+  if test -f /app/actions/manifest.yaml
+  then echo "deploying" >/var/run/state
+       cd /app/actions
+       wsk project deploy
+  fi
+  echo "ready" >/var/run/state
 )&
 DOCKER_NETWORK=$(docker inspect $(hostname) -f "{{json .NetworkSettings.Networks}}" | jq -r 'keys[0]')
 JVM_ARGS="-Dconfig.override_with_env_vars=true\
